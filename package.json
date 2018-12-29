@@ -10,5 +10,8 @@
   "scripts": {
     "test": "jest",
     "format": "./node_modules/.bin/prettier --write '{src,tests}/**/*.js'"
+  },
+  "dependencies": {
+    "chalk": "^2.4.1"
   }
 }
