@@ -1,18 +1,39 @@
 const Files = require("../src/Files");
 
+/**
+ * Returns true if the repository is bare.
+ */
 const isBare = () => read().core[""].bare === "true";
 
+/**
+ * Throws error if the repository is bare.
+ */
 const assertNotBare = () => {
   if (isBare()) {
     throw new Error("this operation must be run in a work tree");
   }
 };
 
+/**
+ * Returns the contents of the config file as a nested JS object.
+ */
 const read = () => strToObj(Files.read(Files.enkelgitPath("config")));
 
+/**
+ * Stringifies the nested JS object configObj and overwrites the
+ * config file with it.
+ *
+ * @param {Object} configObj
+ */
 const write = configObj =>
   Files.write(Files.enkelgitPath("config"), objToStr(configObj));
 
+/**
+ * Parses the config string str and returns its contents as a
+ * nested JS object.
+ *
+ * @param {String} str
+ */
 const strToObj = str => {
   return str
     .split("[")
@@ -41,6 +62,12 @@ const strToObj = str => {
     );
 };
 
+/**
+ * ConfigObj is a JS object that holds the config for the repository.
+ * objToStr() stringifies the object and returns the string.
+ *
+ * @param {String} configObj
+ */
 const objToStr = configObj => {
   return Object.keys(configObj)
     .reduce((arr, section) => {
@@ -66,4 +93,13 @@ const objToStr = configObj => {
       );
     })
     .join("");
+};
+
+module.exports = {
+  isBare,
+  assertNotBare,
+  read,
+  write,
+  strToObj,
+  objToStr
 };
