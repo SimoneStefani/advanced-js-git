@@ -1,6 +1,6 @@
-const Config = require("../src/Config");
-const Files = require("../src/Files");
-const CLI = require("../src/CLI");
+const Config = require("./Config");
+const Files = require("./Files");
+const CLI = require("./CLI");
 
 /**
  * Initializes the current directory as a new repository.
