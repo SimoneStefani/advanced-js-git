@@ -34,6 +34,29 @@ const init = (opts = {}) => {
   );
 };
 
+/**
+ * Adds files that match path to the index.
+ *
+ * @param {String} path
+ * @param {Any} _
+ */
+const add = (path, _) => {
+  Files.assertInRepo();
+  Config.assertNotBare();
+
+  // Get the paths of all the files matching path.
+  const addedFiles = Files.lsRecursive(path);
+
+  // Abort if no files matched path. Otherwise, use the update_index()
+  // Git command to actually add the files.
+  if (addedFiles.length === 0) {
+    throw new Error(Files.pathFromRepoRoot(path) + " did not match any files");
+  } else {
+    addedFiles.forEach(p => update_index(p, { add: true }));
+  }
+};
+
 module.exports = {
-  init
+  init,
+  add
 };
