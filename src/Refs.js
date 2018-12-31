@@ -1,6 +1,7 @@
 const nodePath = require("path");
 const fs = require("fs");
 
+const Objects = require("./Objects");
 const Config = require("./Config");
 const Files = require("./Files");
 const Utils = require("./Utils");
@@ -47,14 +48,13 @@ const terminalRef = ref => {
  */
 const hash = refOrHash => {
   if (Objects.exists(refOrHash)) {
-    // TODO!!!
     return refOrHash;
   } else {
-    const terminalRef = terminalRef(refOrHash);
-    if (terminalRef === "FETCH_HEAD") {
+    const termRef = terminalRef(refOrHash);
+    if (termRef === "FETCH_HEAD") {
       return fetchHeadBranchToMerge(headBranchName());
-    } else if (exists(terminalRef)) {
-      return Files.read(Files.enkelgitPath(terminalRef));
+    } else if (exists(termRef)) {
+      return Files.read(Files.enkelgitPath(termRef));
     }
   }
 };

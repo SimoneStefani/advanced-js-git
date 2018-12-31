@@ -50,7 +50,7 @@ const keyPieces = key => {
  * only uses the file path as a key.
  */
 const toc = () => {
-  const idx = index.read();
+  const idx = read();
   return Object.keys(idx).reduce(
     (obj, k) => Utils.setIn(obj, [k.split(",")[0], idx[k]]),
     {}
@@ -69,7 +69,7 @@ const isFileInConflict = path => hasFile(path, 2);
  * are in conflict.
  */
 const conflictedPaths = () => {
-  let idx = index.read();
+  let idx = read();
   return Object.keys(idx)
     .filter(k => keyPieces(k).stage === 2)
     .map(k => keyPieces(k).path);
@@ -166,7 +166,7 @@ const write = index => {
 const workingCopyToc = () => {
   return Object.keys(read())
     .map(k => k.split(",")[0])
-    .filter((p = fs.existsSync(Files.workingCopyPath(p))))
+    .filter(p =>fs.existsSync(Files.workingCopyPath(p)))
     .reduce((idx, p) => {
       idx[p] = Utils.hash(Files.read(Files.workingCopyPath(p)));
       return idx;

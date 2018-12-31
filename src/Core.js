@@ -3,6 +3,8 @@ const fs = require("fs");
 const Config = require("./Config");
 const Files = require("./Files");
 const Index = require("./Index");
+const Utils = require("./Utils");
+const Diff = require("./Diff");
 const CLI = require("./CLI");
 
 /**
@@ -59,6 +61,57 @@ const add = (path, _) => {
   }
 };
 
+/**
+ * Removes files that match path from the index.
+ *
+ * @param {String} path
+ * @param {Object} opts
+ */
+const rm = (path, opts = {}) => {
+  Files.assertInRepo();
+  Config.assertNotBare();
+
+  // Get the paths of all files in the index that match path.
+  const filesToRm = Index.matchingFiles(path);
+
+  if (opts.f) {
+    // Abort if -f was passed. The removal of files with
+    // changes is not supported.
+    throw new Error("unsupported");
+  } else if (filesToRm.length === 0) {
+    // Abort if no files matched path.
+    throw new Error(Files.pathFromRepoRoot(path) + " did not match any files");
+  } else if (
+    fs.existsSync(path) &&
+    fs.statSync(path).isDirectory() &&
+    !opts.r
+  ) {
+    // Abort if path is a directory and -r was not passed.
+    throw new Error("not removing " + path + " recursively without -r");
+  } else {
+    // Get a list of all files that are to be removed and have also
+    // been changed on disk. If this list is not empty then abort.
+    var changesToRm = Utils.intersection(
+      Diff.addedOrModifiedFiles(),
+      filesToRm
+    );
+
+    if (changesToRm.length > 0) {
+      throw new Error(
+        "these files have changes:\n" + changesToRm.join("\n") + "\n"
+      );
+    } else {
+      // Otherwise, remove the files that match path. Delete them from
+      // disk and remove from the index.
+      filesToRm
+        .map(Files.workingCopyPath())
+        .filter(fs.existsSync)
+        .forEach(fs.unlinkSync);
+      filesToRm.forEach(p => update_index(p, { remove: true }));
+    }
+  }
+};
+
 const update_index = (path, opts = {}) => {
   Files.assertInRepo();
   Config.assertNotBare();
@@ -104,5 +157,6 @@ const update_index = (path, opts = {}) => {
 
 module.exports = {
   init,
-  add
+  add,
+  rm
 };
