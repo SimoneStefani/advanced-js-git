@@ -56,6 +56,7 @@ const toc = () => {
 
 /**
  * Returns true if the file for path is in conflict.
+ *
  * @param {String} path
  */
 const isFileInConflict = path => hasFile(path, 2);
