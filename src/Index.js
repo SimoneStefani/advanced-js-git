@@ -166,7 +166,7 @@ const write = index => {
 const workingCopyToc = () => {
   return Object.keys(read())
     .map(k => k.split(",")[0])
-    .filter(p =>fs.existsSync(Files.workingCopyPath(p)))
+    .filter(p => fs.existsSync(Files.workingCopyPath(p)))
     .reduce((idx, p) => {
       idx[p] = Utils.hash(Files.read(Files.workingCopyPath(p)));
       return idx;

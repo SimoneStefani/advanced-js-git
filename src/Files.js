@@ -15,7 +15,7 @@ const inRepo = () => enkelgitPath() !== undefined;
  */
 const assertInRepo = () => {
   if (!inRepo()) {
-    throw new Error("not a Gitlet repository");
+    throw new Error("not a Enkelgit repository");
   }
 };
 
