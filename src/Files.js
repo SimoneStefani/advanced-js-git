@@ -1,7 +1,7 @@
 const nodePath = require("path");
 const fs = require("fs");
 
-const Utils = require("../src/Utils");
+const Utils = require("./Utils");
 
 /**
  * Returns true if the current working directory is inside

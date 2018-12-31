@@ -1,3 +1,6 @@
+const nodePath = require("path");
+const fs = require("fs");
+
 const Config = require("./Config");
 const Files = require("./Files");
 const Utils = require("./Utils");
@@ -165,4 +168,21 @@ const commitParentHashes = () => {
     // currently pointing at.
     return [headHash];
   }
+};
+
+module.exports = {
+  isRef,
+  terminalRef,
+  hash,
+  isHeadDetached,
+  isCheckedOut,
+  toLocalRef,
+  toRemoteRef,
+  write,
+  rm,
+  fetchHeadBranchToMerge,
+  localHeads,
+  exists,
+  headBranchName,
+  commitParentHashes
 };

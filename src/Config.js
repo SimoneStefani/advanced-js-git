@@ -1,4 +1,5 @@
 const Files = require("../src/Files");
+const Utils = require("../src/Utils");
 
 /**
  * Returns true if the repository is bare.

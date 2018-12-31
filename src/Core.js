@@ -1,5 +1,8 @@
+const fs = require("fs");
+
 const Config = require("./Config");
 const Files = require("./Files");
+const Index = require("./Index");
 const CLI = require("./CLI");
 
 /**
@@ -53,6 +56,49 @@ const add = (path, _) => {
     throw new Error(Files.pathFromRepoRoot(path) + " did not match any files");
   } else {
     addedFiles.forEach(p => update_index(p, { add: true }));
+  }
+};
+
+const update_index = (path, opts = {}) => {
+  Files.assertInRepo();
+  Config.assertNotBare();
+
+  const pathFromRoot = Files.pathFromRepoRoot(path);
+  const isOnDisk = fs.existsSync(path);
+  const isInIndex = Index.hasFile(path, 0);
+
+  // Abort if path is a directory. update_index() only handles single files.
+  if (isOnDisk && fs.statSync(path).isDirectory()) {
+    throw new Error(pathFromRoot + " is a directory - add files inside\n");
+  } else if (opts.remove && !isOnDisk && isInIndex) {
+    if (Index.isFileInConflict(path)) {
+      // Abort if file is being removed and is in conflict.
+      // Enkelgit doesn’t support this.
+      throw new Error("unsupported");
+    } else {
+      // If files is being removed, is not on disk and is in
+      // the index, remove it from the index.
+      Index.writeRm(path);
+      return "\n";
+    }
+  } else if (opts.remove && !isOnDisk && !isInIndex) {
+    // If file is being removed, is not on disk and not in
+    // the index, there is no work to do.
+    return "\n";
+  } else if (!opts.add && isOnDisk && !isInIndex) {
+    // Abort if the file is on disk and not in the index and
+    // the --add was not passed.
+    throw new Error(
+      "cannot add " + pathFromRoot + " to index - use --add option\n"
+    );
+  } else if (isOnDisk && (opts.add || isInIndex)) {
+    // If file is on disk and either -add was passed or the file is
+    // in the index, add the file’s current content to the index.
+    Index.writeNonConflict(path, Files.read(Files.workingCopyPath(path)));
+    return "\n";
+  } else if (!opts.remove && !isOnDisk) {
+    // Abort if the file is not on disk and --remove not passed.
+    throw new Error(pathFromRoot + " does not exist and --remove not passed\n");
   }
 };
 

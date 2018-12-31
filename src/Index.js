@@ -1,3 +1,6 @@
+const fs = require("fs");
+
+const Objects = require("./Objects");
 const Files = require("./Files");
 const Utils = require("./Utils");
 
@@ -138,7 +141,7 @@ const writeRm = path => {
  */
 const _writeStageEntry = (path, stage, content) => {
   const idx = read();
-  idx[key(path, stage)] = objects.write(content); // TODO !!!!
+  idx[key(path, stage)] = Objects.write(content);
   write(idx);
 };
 
