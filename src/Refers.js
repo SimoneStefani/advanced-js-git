@@ -155,7 +155,7 @@ const headBranchName = () => {
  */
 const commitParentHashes = () => {
   const headHash = hash("HEAD");
-  if (Merge.isMergeInProgress()) {
+  if (hash("MERGE_HEAD")) {
     // TODO!!!
     // If the repository is in the middle of a merge,
     // return the hashes of the two commits being merged.

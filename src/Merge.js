@@ -4,7 +4,7 @@ const Config = require("./Config");
 const Utils = require("./Utils");
 const Files = require("./Files");
 const Index = require("./Index");
-const Refs = require("./Refs");
+const Refs = require("./Refers");
 const Diff = require("./Diff");
 
 const FILE_STATUS = {
