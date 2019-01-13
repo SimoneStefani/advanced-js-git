@@ -176,7 +176,7 @@ const commit = opts => {
         // If MERGE_HEAD exists, the repository was in the merge state.
         // Remove MERGE_HEAD and MERGE_MSGto exit the merge state.
         // Report that the merge is complete.
-        fs.unlinkSync(Files.gitletPath("MERGE_MSG"));
+        fs.unlinkSync(Files.enkelgitPath("MERGE_MSG"));
         Refs.rm("MERGE_HEAD");
         return "Merge made by the three-way strategy";
       } else {
