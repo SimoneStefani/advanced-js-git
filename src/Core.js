@@ -1,5 +1,6 @@
 const fs = require("fs");
 
+const WorkingCopy = require("./WorkingCopy");
 const Objects = require("./Objects");
 const Config = require("./Config");
 const Status = require("./Status");
@@ -222,9 +223,9 @@ const branch = name => {
 /**
  * Changes the index, working copy and HEAD to reflect the
  * content of ref. ref might be a branch name or a commit hash.
- * 
- * @param {String} ref 
- * @param {Any} _ 
+ *
+ * @param {String} ref
+ * @param {Any} _
  */
 const checkout = (ref, _) => {
   Files.assertInRepo();
@@ -267,7 +268,7 @@ const checkout = (ref, _) => {
 
       // Get the list of differences between the current commit
       // and the commit to check out. Write them to the working copy.
-      workingCopy.write(Diff.diff(Refs.hash("HEAD"), toHash));
+      WorkingCopy.write(Diff.diff(Refs.hash("HEAD"), toHash));
 
       // Write the commit being checked out to HEAD. If the head is
       // being detached, the commit hash is written directly to the HEAD file.
@@ -286,6 +287,66 @@ const checkout = (ref, _) => {
         ? "Note: checking out " + toHash + "\nYou are in detached HEAD state."
         : "Switched to branch " + ref;
     }
+  }
+};
+
+/**
+ * Shows the changes required to go from the ref1 commit to the ref2 commit.
+ *
+ * @param {String} ref1
+ * @param {String} ref2
+ */
+const diff = (ref1, ref2) => {
+  Files.assertInRepo();
+  Config.assertNotBare();
+
+  if (ref1 !== undefined && Refs.hash(ref1) === undefined) {
+    // Abort if ref1 was supplied, but it does not resolve to a hash.
+    throw new Error("ambiguous argument " + ref1 + ": unknown revision");
+  } else if (ref2 !== undefined && Refs.hash(ref2) === undefined) {
+    // Abort if ref2 was supplied, but it does not resolve to a hash.
+    throw new Error("ambiguous argument " + ref2 + ": unknown revision");
+  } else {
+    // Otherwise, perform diff. Enkelgit only shows the name of each changed
+    // file and whether it was added, modified or deleted. For simplicity,
+    // the changed content is not shown. The diff happens between two versions
+    // of the repository. The first version is either the hash that ref1 resolves
+    // to, or the index. The second version is either the hash that ref2 resolves
+    // to, or the working copy.
+    var nameToStatus = Diff.nameStatus(
+      Diff.diff(Refs.hash(ref1), Refs.hash(ref2))
+    );
+
+    // Show the path of each changed file.
+    return (
+      Object.keys(nameToStatus)
+        .map(path => nameToStatus[path] + " " + path)
+        .join("\n") + "\n"
+    );
+  }
+};
+
+/**
+ * Records the locations of remote versions of this repository.
+ *
+ * @param {String} command
+ * @param {String} name
+ * @param {String} path
+ */
+const remote = (command, name, path) => {
+  Files.assertInRepo();
+
+  if (command !== "add") {
+    // Abort if command is not “add”. Only “add” is supported.
+    throw new Error("unsupported");
+  } else if (name in Config.read()["remote"]) {
+    // Abort if repository already has a record for a remote called name.
+    throw new Error("remote " + name + " already exists");
+  } else {
+    // Otherwise, add remote record. Write to the config file a record
+    // of the name and path of the remote.
+    Config.write(Utils.setIn(Config.read(), ["remote", name, "url", path]));
+    return "\n";
   }
 };
 
@@ -404,5 +465,8 @@ module.exports = {
   rm,
   status,
   commit,
-  branch
+  branch,
+  checkout,
+  diff,
+  remote
 };

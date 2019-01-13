@@ -55,7 +55,7 @@ const write = dif => {
   // the deletion of all the files in them.
   fs.readdirSync(Files.workingCopyPath())
     .filter(n => n !== ".enkelgit")
-    .forEach(Files.rmEmptyDirs());
+    .forEach(d => Files.rmEmptyDirs(d));
 };
 
 module.exports = {
