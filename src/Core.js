@@ -351,6 +351,78 @@ const remote = (command, name, path) => {
 };
 
 /**
+ * Records the commit that branch is at on remote. It
+ * does not change the local branch.
+ *
+ * @param {String} remote
+ * @param {String} branch
+ */
+const fetch = (remote, branch) => {
+  Files.assertInRepo();
+
+  if (remote === undefined || branch === undefined) {
+    // Abort if a remote or branch not passed.
+    throw new Error("unsupported");
+  } else if (!(remote in Config.read().remote)) {
+    // Abort if remote not recorded in config file.
+    throw new Error(remote + " does not appear to be a git repository");
+  } else {
+    // Get the location of the remote.
+    const remoteUrl = Config.read().remote[remote].url;
+
+    // Turn the unqualified branch name into a qualified
+    // remote ref eg [branch] -> refs/remotes/[remote]/[branch]
+    const remoteRef = Refs.toRemoteRef(remote, branch);
+
+    // Go to the remote repository and get the hash of
+    // the commit that branch is on.
+    const newHash = Utils.onRemote(remoteUrl)(Refs.hash, branch);
+
+    if (newHash === undefined) {
+      // Abort if branch did not exist on the remote.
+      throw new Error("couldn't find remote ref " + branch);
+    } else {
+      // Otherwise, perform the fetch. Note down the hash of the commit
+      // this repository currently thinks the remote branch is on.
+      const oldHash = Refs.hash(remoteRef);
+
+      // Get all the objects in the remote objects directory and write them.
+      // to the local objects directory. (This is an inefficient way of
+      // getting all the objects required to recreate locally the commit the
+      // remote branch is on)
+      const remoteObjects = Utils.onRemote(remoteUrl)(Objects.allObjects);
+      remoteObjects.forEach(Objects.write);
+
+      // Set the contents of the file at .enkelgit/refs/remotes/[remote]/[branch]
+      // to newHash, the hash of the commit that the remote branch is on.
+      update_ref(remoteRef, newHash);
+
+      // Record the hash of the commit that the remote branch is on in FETCH_HEAD.
+      // (The user can call enkelgit merge FETCH_HEAD to merge the remote version
+      // of the branch into their local branch.
+      Refs.write(
+        "FETCH_HEAD",
+        newHash + " branch " + branch + " of " + remoteUrl
+      );
+
+      // Report the result of the fetch.
+      return (
+        [
+          "From " + remoteUrl,
+          "Count " + remoteObjects.length,
+          branch +
+            " -> " +
+            remote +
+            "/" +
+            branch +
+            (Merge.isAForceFetch(oldHash, newHash) ? " (forced)" : "")
+        ].join("\n") + "\n"
+      );
+    }
+  }
+};
+
+/**
  * Reports the state of the repo: the current branch,
  * untracked files, conflicted files, files that are
  * staged to be committed and files that are not staged
@@ -468,5 +540,6 @@ module.exports = {
   branch,
   checkout,
   diff,
-  remote
+  remote,
+  fetch
 };
