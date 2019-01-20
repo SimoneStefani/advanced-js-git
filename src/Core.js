@@ -521,6 +521,128 @@ const pull = (remote, branch) => {
 };
 
 /**
+ * Gets the commit that branch is on in the local repo
+ * and points branch on remote at the same commit.
+ *
+ * @param {String} remote
+ * @param {String} branch
+ * @param {Object} opts
+ */
+const push = (remote, branch, opts = {}) => {
+  Files.assertInRepo();
+
+  if (remote === undefined || branch === undefined) {
+    // Abort if a remote or branch not passed.
+    throw new Error("unsupported");
+  } else if (!(remote in Config.read().remote)) {
+    // Abort if remote not recorded in config file.
+    throw new Error(remote + " does not appear to be a git repository");
+  } else {
+    var remotePath = Config.read().remote[remote].url;
+    var remoteCall = Utils.onRemote(remotePath);
+
+    if (remoteCall(Refs.isCheckedOut, branch)) {
+      // Abort if remote repository is not bare and branch is checked out.
+      throw new Error("refusing to update checked out branch " + branch);
+    } else {
+      // Get receiverHash, the hash of the commit that branch is on at remote.
+      var receiverHash = remoteCall(Refs.hash, branch);
+
+      // Get giverHash, the hash of the commit that branch is on at
+      // the local repository.
+      var giverHash = Refs.hash(branch);
+
+      if (Objects.isUpToDate(receiverHash, giverHash)) {
+        // Do nothing if the remote branch - the receiver - has already
+        // incorporated the commit that giverHash points to. This is the
+        // case if the receiver commit and giver commit are the same, or
+        // if the giver commit is an ancestor of the receiver commit.
+        return "Already up-to-date";
+      } else if (!opts.f && !Merge.canFastForward(receiverHash, giverHash)) {
+        // Abort if branch on remote cannot be fast forwarded to the commit
+        // that giverHash points to. A fast forward can only be done if the
+        // receiver commit is an ancestor of the giver commit.
+        throw new Error("failed to push some refs to " + remotePath);
+      } else {
+        // Otherwise, do the push. Put all the objects in the local objects
+        // directory into the remote objects directory.
+        Objects.allObjects().forEach(function(o) {
+          remoteCall(objects.write, o);
+        });
+
+        // Point branch on remote at giverHash.
+        remoteCall(update_ref(), Refs.toLocalRef(branch), giverHash);
+
+        // Set the local repo’s record of what commit branch is on at remote
+        // to giverHash (since that is what it is now is).
+        update_ref(refs.toRemoteRef(remote, branch), giverHash);
+
+        // Report the result of the push.
+        return (
+          [
+            "To " + remotePath,
+            "Count " + Objects.allObjects().length,
+            branch + " -> " + branch
+          ].join("\n") + "\n"
+        );
+      }
+    }
+  }
+};
+
+const clone = (remotePath, targetPath, opts = {}) => {
+  if (remotePath === undefined || targetPath === undefined) {
+    // Abort if a remotePath or targetPath not passed.
+    throw new Error("you must specify remote path and target path");
+  } else if (
+    !fs.existsSync(remotePath) ||
+    !Utils.onRemote(remotePath)(Files.inRepo)
+  ) {
+    // Abort if remotePath does not exist, or is not a Enkelgit repository.
+    throw new Error("repository " + remotePath + " does not exist");
+  } else if (
+    fs.existsSync(targetPath) &&
+    fs.readdirSync(targetPath).length > 0
+  ) {
+    // Abort if targetPath exists and is not empty.
+    throw new Error(targetPath + " already exists and is not empty");
+  } else {
+    // Otherwise, do the clone.
+    remotePath = nodePath.resolve(process.cwd(), remotePath);
+
+    // If targetPath doesn’t exist, create it.
+    if (!fs.existsSync(targetPath)) {
+      fs.mkdirSync(targetPath);
+    }
+
+    // In the directory for the new remote repository…
+    Utils.onRemote(targetPath)(function() {
+      // Initialize the directory as a Enkelgit repository.
+      init(opts);
+
+      // Set up remotePath as a remote called “origin”.
+      remote("add", "origin", nodePath.relative(process.cwd(), remotePath));
+
+      // Get the hash of the commit that master is pointing
+      // at on the remote repository.
+      var remoteHeadHash = Utils.onRemote(remotePath)(Refs.hash, "master");
+
+      // If the remote repo has any commits, that hash will exist.
+      // The new repository records the commit that the passed branch
+      // is at on the remote. It then sets master on the new repository
+      // to point at that commit.
+      if (remoteHeadHash !== undefined) {
+        fetch("origin", "master");
+        Merge.writeFastForwardMerge(undefined, remoteHeadHash);
+      }
+    });
+
+    // Report the result of the clone.
+    return "Cloning into " + targetPath;
+  }
+};
+
+/**
  * Reports the state of the repo: the current branch,
  * untracked files, conflicted files, files that are
  * staged to be committed and files that are not staged
@@ -640,5 +762,8 @@ module.exports = {
   diff,
   remote,
   fetch,
-  merge
+  merge,
+  pull,
+  push,
+  clone
 };
