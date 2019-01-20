@@ -423,6 +423,104 @@ const fetch = (remote, branch) => {
 };
 
 /**
+ * Finds the set of differences between the commit that the currently
+ * checked out branch is on and the commit that ref points to. It
+ * finds or creates a commit that applies these differences to the
+ * checked out branch.
+ *
+ * @param {String} ref
+ */
+const merge = ref => {
+  Files.assertInRepo();
+  Config.assertNotBare();
+
+  // Get the receiverHash, the hash of the commit that the
+  // current branch is on.
+  var receiverHash = Refs.hash("HEAD");
+
+  // Get the giverHash, the hash for the commit to merge
+  // into the receiver commit.
+  var giverHash = Refs.hash(ref);
+
+  if (Refs.isHeadDetached()) {
+    // Abort if head is detached. Merging into a detached
+    // head is not supported.
+    throw new Error("unsupported");
+  } else if (
+    giverHash === undefined ||
+    Objects.type(Objects.read(giverHash)) !== "commit"
+  ) {
+    // Abort if ref did not resolve to a hash, or if that
+    // hash is not for a commit object.
+    throw new Error(ref + ": expected commit type");
+  } else if (Objects.isUpToDate(receiverHash, giverHash)) {
+    // Do not merge if the current branch - the receiver - already
+    // has the giver’s changes. This is the case if the receiver
+    // and giver are the same commit, or if the giver is an
+    // ancestor of the receiver.
+    return "Already up-to-date";
+  } else {
+    var paths = Diff.changedFilesCommitWouldOverwrite(giverHash);
+    // Get a list of files changed in the working copy. Get a
+    // list of the files that are different in the receiver
+    // and giver. If any files appear in both lists then abort.
+    if (paths.length > 0) {
+      throw new Error(
+        "local changes would be lost\n" + paths.join("\n") + "\n"
+      );
+    } else if (Merge.canFastForward(receiverHash, giverHash)) {
+      // If the receiver is an ancestor of the giver, a fast forward
+      // is performed. This is possible because there is already a
+      // commit that incorporates all of the giver’s changes into
+      // the receiver.
+      Merge.writeFastForwardMerge(receiverHash, giverHash);
+      return "Fast-forward";
+    } else {
+      // If the receiver is not an ancestor of the giver, a
+      // merge commit must be created.
+      // The repository is put into the merge state. The MERGE_HEAD
+      // file is written and its contents set to giverHash. The MERGE_MSG
+      // file is written and its contents set to a boilerplate merge
+      // commit message. A merge diff is created that will turn the
+      // contents of receiver into the contents of giver. This contains
+      // the path of every file that is different and whether it was added,
+      // removed or modified, or is in conflict. Added files are added to
+      // the index and working copy. Removed files are removed from the
+      // index and working copy. Modified files are modified in the index
+      // and working copy. Files that are in conflict are written to the
+      // working copy to include the receiver and giver versions. Both the
+      // receiver and giver versions are written to the index.
+      Merge.writeNonFastForwardMerge(receiverHash, giverHash, ref);
+
+      if (Merge.hasConflicts(receiverHash, giverHash)) {
+        // If there are any conflicted files, a message is shown to say
+        // that the user must sort them out before the merge can be completed.
+        return "Automatic merge failed. Fix conflicts and commit the result.";
+      } else {
+        // If there are no conflicted files, a commit is created from the
+        // merged changes and the merge is over.
+        return commit();
+      }
+    }
+  }
+};
+
+/**
+ * Fetches the commit that branch is on at remote.
+ * It merges that commit into the current branch.
+ *
+ * @param {String} remote
+ * @param {String} branch
+ */
+const pull = (remote, branch) => {
+  Files.assertInRepo();
+  Config.assertNotBare();
+
+  fetch(remote, branch);
+  return merge("FETCH_HEAD");
+};
+
+/**
  * Reports the state of the repo: the current branch,
  * untracked files, conflicted files, files that are
  * staged to be committed and files that are not staged
@@ -541,5 +639,6 @@ module.exports = {
   checkout,
   diff,
   remote,
-  fetch
+  fetch,
+  merge
 };
