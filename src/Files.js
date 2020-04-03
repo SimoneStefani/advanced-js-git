@@ -24,7 +24,7 @@ const assertInRepo = () => {
  *
  * @param {String} path
  */
-const pathFromRepoRoot = path =>
+const pathFromRepoRoot = (path) =>
   nodePath.relative(workingCopyPath(), nodePath.join(process.cwd(), path));
 
 /**
@@ -50,7 +50,7 @@ const write = (path, content) => {
  * @param {String} prefix
  */
 const writeFilesFromTree = (tree, prefix) => {
-  Object.keys(tree).forEach(name => {
+  Object.keys(tree).forEach((name) => {
     let path = nodePath.join(prefix, name);
     if (Utils.isString(tree[name])) {
       fs.writeFileSync(path, tree[name]);
@@ -69,9 +69,9 @@ const writeFilesFromTree = (tree, prefix) => {
  *
  * @param {String} path
  */
-const rmEmptyDirs = path => {
+const rmEmptyDirs = (path) => {
   if (fs.statSync(path).isDirectory()) {
-    fs.readdirSync(path).forEach(c => rmEmptyDirs(nodePath.join(path, c)));
+    fs.readdirSync(path).forEach((c) => rmEmptyDirs(nodePath.join(path, c)));
 
     if (fs.readdirSync(path).length === 0) {
       fs.rmdirSync(path);
@@ -85,7 +85,7 @@ const rmEmptyDirs = path => {
  *
  * @param {String} path
  */
-const read = path => {
+const read = (path) => {
   if (fs.existsSync(path)) {
     return fs.readFileSync(path, "utf8");
   }
@@ -97,7 +97,7 @@ const read = path => {
  *
  * @param {String} path
  */
-const enkelgitPath = path => {
+const enkelgitPath = (path) => {
   function enkelgitDir(dir) {
     if (fs.existsSync(dir)) {
       const potentialConfigFile = nodePath.join(dir, "config");
@@ -138,7 +138,7 @@ const workingCopyPath = (path = "") => {
  *
  * @param {String} path
  */
-const lsRecursive = path => {
+const lsRecursive = (path) => {
   if (!fs.existsSync(path)) {
     return [];
   } else if (fs.statSync(path).isFile()) {
@@ -157,7 +157,7 @@ const lsRecursive = path => {
  *
  * @param {Object} obj
  */
-const nestFlatTree = obj => {
+const nestFlatTree = (obj) => {
   return Object.keys(obj).reduce((tree, wholePath) => {
     return Utils.setIn(
       tree,
@@ -180,7 +180,7 @@ const flattenNestedTree = (tree, obj, prefix) => {
     return flattenNestedTree(tree, {}, "");
   }
 
-  Object.keys(tree).forEach(dir => {
+  Object.keys(tree).forEach((dir) => {
     const path = nodePath.join(prefix, dir);
     if (Utils.isString(tree[dir])) {
       obj[path] = tree[dir];
@@ -204,5 +204,5 @@ module.exports = {
   workingCopyPath,
   lsRecursive,
   nestFlatTree,
-  flattenNestedTree
+  flattenNestedTree,
 };

@@ -39,7 +39,7 @@ const key = (path, stage) => path + "," + stage;
  *
  * @param {String} key
  */
-const keyPieces = key => {
+const keyPieces = (key) => {
   const pieces = key.split(/,/);
   return { path: pieces[0], stage: parseInt(pieces[1]) };
 };
@@ -62,7 +62,7 @@ const toc = () => {
  *
  * @param {String} path
  */
-const isFileInConflict = path => hasFile(path, 2);
+const isFileInConflict = (path) => hasFile(path, 2);
 
 /**
  * Returns an array of all the paths of files that
@@ -71,8 +71,8 @@ const isFileInConflict = path => hasFile(path, 2);
 const conflictedPaths = () => {
   let idx = read();
   return Object.keys(idx)
-    .filter(k => keyPieces(k).stage === 2)
-    .map(k => keyPieces(k).path);
+    .filter((k) => keyPieces(k).stage === 2)
+    .map((k) => keyPieces(k).path);
 };
 
 /**
@@ -126,9 +126,9 @@ const writeConflict = (path, receiverContent, giverContent, baseContent) => {
  *
  * @param {String} path
  */
-const writeRm = path => {
+const writeRm = (path) => {
   const idx = read();
-  [0, 1, 2, 3].forEach(stage => delete idx[key(path, stage)]);
+  [0, 1, 2, 3].forEach((stage) => delete idx[key(path, stage)]);
   write(idx);
 };
 
@@ -151,10 +151,10 @@ const _writeStageEntry = (path, stage, content) => {
  *
  * @param {Object} index
  */
-const write = index => {
+const write = (index) => {
   let indexStr =
     Object.keys(index)
-      .map(k => k.split(",")[0] + " " + k.split(",")[1] + " " + index[k])
+      .map((k) => k.split(",")[0] + " " + k.split(",")[1] + " " + index[k])
       .join("\n") + "\n";
   Files.write(Files.enkelgitPath("index"), indexStr);
 };
@@ -165,8 +165,8 @@ const write = index => {
  */
 const workingCopyToc = () => {
   return Object.keys(read())
-    .map(k => k.split(",")[0])
-    .filter(p => fs.existsSync(Files.workingCopyPath(p)))
+    .map((k) => k.split(",")[0])
+    .filter((p) => fs.existsSync(Files.workingCopyPath(p)))
     .reduce((idx, p) => {
       idx[p] = Utils.hash(Files.read(Files.workingCopyPath(p)));
       return idx;
@@ -181,7 +181,7 @@ const workingCopyToc = () => {
  *
  * @param {Object} toc
  */
-const tocToIndex = toc => {
+const tocToIndex = (toc) => {
   return Object.keys(toc).reduce(
     (idx, p) => Utils.setIn(idx, [key(p, 0), toc[p]]),
     {}
@@ -194,9 +194,9 @@ const tocToIndex = toc => {
  *
  * @param {String} pathSpec
  */
-const matchingFiles = pathSpec => {
+const matchingFiles = (pathSpec) => {
   const searchPath = Files.pathFromRepoRoot(pathSpec);
-  return Object.keys(toc()).filter(p =>
+  return Object.keys(toc()).filter((p) =>
     p.match("^" + searchPath.replace(/\\/g, "\\\\"))
   );
 };
@@ -216,5 +216,5 @@ module.exports = {
   write,
   workingCopyToc,
   tocToIndex,
-  matchingFiles
+  matchingFiles,
 };

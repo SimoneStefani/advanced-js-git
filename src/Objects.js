@@ -10,10 +10,10 @@ const Utils = require("./Utils");
  *
  * @param {Object} tree
  */
-const writeTree = tree => {
+const writeTree = (tree) => {
   const treeObject =
     Object.keys(tree)
-      .map(key => {
+      .map((key) => {
         if (Utils.isString(tree[key])) {
           return "blob " + tree[key] + " " + key;
         } else {
@@ -38,7 +38,7 @@ const fileTree = (treeHash, tree) => {
     return fileTree(treeHash, {});
   }
 
-  Utils.lines(read(treeHash)).forEach(line => {
+  Utils.lines(read(treeHash)).forEach((line) => {
     const lineTokens = line.split(/ /);
     tree[lineTokens[2]] =
       lineTokens[0] === "tree" ? fileTree(lineTokens[1], {}) : lineTokens[1];
@@ -59,7 +59,7 @@ const writeCommit = (treeHash, message, parentHashes) => {
     "commit " +
       treeHash +
       "\n" +
-      parentHashes.map(h => "parent " + h + "\n").join("") +
+      parentHashes.map((h) => "parent " + h + "\n").join("") +
       "Date:  " +
       new Date().toString() +
       "\n" +
@@ -75,7 +75,7 @@ const writeCommit = (treeHash, message, parentHashes) => {
  *
  * @param {String} str
  */
-const write = str => {
+const write = (str) => {
   Files.write(
     nodePath.join(Files.enkelgitPath(), "objects", Utils.hash(str)),
     str
@@ -103,7 +103,7 @@ const isUpToDate = (receiverHash, giverHash) => {
  *
  * @param {String} objectHash
  */
-const exists = objectHash => {
+const exists = (objectHash) => {
   return (
     objectHash !== undefined &&
     fs.existsSync(nodePath.join(Files.enkelgitPath(), "objects", objectHash))
@@ -115,7 +115,7 @@ const exists = objectHash => {
  *
  * @param {String} objectHash
  */
-const read = objectHash => {
+const read = (objectHash) => {
   if (objectHash !== undefined) {
     const objectPath = nodePath.join(
       Files.enkelgitPath(),
@@ -140,7 +140,7 @@ const allObjects = () => {
  *
  * @param {String} str
  */
-const type = str => {
+const type = (str) => {
   return (
     { commit: "commit", tree: "tree", blob: "tree" }[str.split(" ")[0]] ||
     "blob"
@@ -162,7 +162,7 @@ const isAncestor = (descendentHash, ancestorHash) => {
  *
  * @param {String} commitHash
  */
-const ancestors = commitHash => {
+const ancestors = (commitHash) => {
   const parents = parentHashes(read(commitHash));
   return Utils.flatten(parents.concat(parents.map(ancestors)));
 };
@@ -172,12 +172,12 @@ const ancestors = commitHash => {
  *
  * @param {String} str
  */
-const parentHashes = str => {
+const parentHashes = (str) => {
   if (type(str) === "commit") {
     return str
       .split("\n")
-      .filter(line => line.match(/^parent/))
-      .map(line => line.split(" ")[1]);
+      .filter((line) => line.match(/^parent/))
+      .map((line) => line.split(" ")[1]);
   }
 };
 
@@ -186,7 +186,7 @@ const parentHashes = str => {
  *
  * @param {String} str
  */
-const treeHash = str => {
+const treeHash = (str) => {
   if (type(str) === "commit") {
     return str.split(/\s/)[1];
   }
@@ -200,7 +200,7 @@ const treeHash = str => {
  *
  * @param {String} hash
  */
-const commitToc = hash =>
+const commitToc = (hash) =>
   Files.flattenNestedTree(fileTree(treeHash(read(hash))));
 
 module.exports = {
@@ -217,5 +217,5 @@ module.exports = {
   ancestors,
   parentHashes,
   treeHash,
-  commitToc
+  commitToc,
 };

@@ -11,7 +11,7 @@ const Core = require("./src/Core");
  *
  * @param {String} argv
  */
-const parseOptions = argv => {
+const parseOptions = (argv) => {
   let name;
   return argv.reduce(
     (opts, arg) => {
@@ -37,7 +37,7 @@ const parseOptions = argv => {
  * corresponding Enkelgit command and returns the string returned
  * by the command.
  */
-const runCli = (module.exports.runCli = argv => {
+const runCli = (module.exports.runCli = (argv) => {
   let opts = parseOptions(argv);
   let commandName = opts._[2];
 

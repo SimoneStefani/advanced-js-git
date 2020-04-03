@@ -31,7 +31,7 @@ const init = (opts = {}) => {
     HEAD: "ref: refs/heads/master\n",
     config: Config.objToStr({ core: { "": { bare: opts.bare === true } } }),
     objects: {},
-    refs: { heads: {} }
+    refs: { heads: {} },
   };
 
   // Write the standard Git directory structure using the enkelStructure
@@ -62,7 +62,7 @@ const add = (path, _) => {
   if (addedFiles.length === 0) {
     throw new Error(Files.pathFromRepoRoot(path) + " did not match any files");
   } else {
-    addedFiles.forEach(p => update_index(p, { add: true }));
+    addedFiles.forEach((p) => update_index(p, { add: true }));
   }
 };
 
@@ -112,7 +112,7 @@ const rm = (path, opts = {}) => {
         .map(Files.workingCopyPath())
         .filter(fs.existsSync)
         .forEach(fs.unlinkSync);
-      filesToRm.forEach(p => update_index(p, { remove: true }));
+      filesToRm.forEach((p) => update_index(p, { remove: true }));
     }
   }
 };
@@ -124,7 +124,7 @@ const rm = (path, opts = {}) => {
  *
  * @param {Object} opts
  */
-const commit = opts => {
+const commit = (opts) => {
   Files.assertInRepo();
   Config.assertNotBare();
 
@@ -151,7 +151,7 @@ const commit = opts => {
       // Abort if the repository is in the merge state and there are
       // unresolved merge conflicts.
       throw new Error(
-        conflictedPaths.map(p => "U " + p).join("\n") +
+        conflictedPaths.map((p) => "U " + p).join("\n") +
           "\ncannot commit because you have unmerged files\n"
       );
     } else {
@@ -193,14 +193,14 @@ const commit = opts => {
  *
  * @param {String} name
  */
-const branch = name => {
+const branch = (name) => {
   Files.assertInRepo();
 
   if (name === undefined) {
     // If no branch name was passed, list the local branches.
     return (
       Object.keys(Refs.localHeads())
-        .map(branch => {
+        .map((branch) => {
           return (branch === Refs.headBranchName() ? "* " : "  ") + branch;
         })
         .join("\n") + "\n"
@@ -320,7 +320,7 @@ const diff = (ref1, ref2) => {
     // Show the path of each changed file.
     return (
       Object.keys(nameToStatus)
-        .map(path => nameToStatus[path] + " " + path)
+        .map((path) => nameToStatus[path] + " " + path)
         .join("\n") + "\n"
     );
   }
@@ -415,7 +415,7 @@ const fetch = (remote, branch) => {
             remote +
             "/" +
             branch +
-            (Merge.isAForceFetch(oldHash, newHash) ? " (forced)" : "")
+            (Merge.isAForceFetch(oldHash, newHash) ? " (forced)" : ""),
         ].join("\n") + "\n"
       );
     }
@@ -430,7 +430,7 @@ const fetch = (remote, branch) => {
  *
  * @param {String} ref
  */
-const merge = ref => {
+const merge = (ref) => {
   Files.assertInRepo();
   Config.assertNotBare();
 
@@ -566,7 +566,7 @@ const push = (remote, branch, opts = {}) => {
       } else {
         // Otherwise, do the push. Put all the objects in the local objects
         // directory into the remote objects directory.
-        Objects.allObjects().forEach(function(o) {
+        Objects.allObjects().forEach(function (o) {
           remoteCall(objects.write, o);
         });
 
@@ -582,7 +582,7 @@ const push = (remote, branch, opts = {}) => {
           [
             "To " + remotePath,
             "Count " + Objects.allObjects().length,
-            branch + " -> " + branch
+            branch + " -> " + branch,
           ].join("\n") + "\n"
         );
       }
@@ -616,7 +616,7 @@ const clone = (remotePath, targetPath, opts = {}) => {
     }
 
     // In the directory for the new remote repository…
-    Utils.onRemote(targetPath)(function() {
+    Utils.onRemote(targetPath)(function () {
       // Initialize the directory as a Enkelgit repository.
       init(opts);
 
@@ -650,7 +650,7 @@ const clone = (remotePath, targetPath, opts = {}) => {
  *
  * @param {Any} _
  */
-const status = _ => {
+const status = (_) => {
   Files.assertInRepo();
   Config.assertNotBare();
   return Status.toString();
@@ -712,7 +712,7 @@ const update_index = (path, opts = {}) => {
  *
  * @param {Any} _
  */
-const write_tree = _ => {
+const write_tree = (_) => {
   Files.assertInRepo();
   return Objects.writeTree(Files.nestFlatTree(Index.toc()));
 };
@@ -765,5 +765,5 @@ module.exports = {
   merge,
   pull,
   push,
-  clone
+  clone,
 };

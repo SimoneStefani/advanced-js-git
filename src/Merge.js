@@ -12,7 +12,7 @@ const FILE_STATUS = {
   MODIFY: "M",
   DELETE: "D",
   SAME: "SAME",
-  CONFLICT: "CONFLICT"
+  CONFLICT: "CONFLICT",
 };
 
 /**
@@ -76,8 +76,9 @@ const isAForceFetch = (receiverHash, giverHash) => {
 const hasConflicts = (receiverHash, giverHash) => {
   const mrgDiff = mergeDiff(receiverHash, giverHash);
   return (
-    Object.keys(mrgDiff).filter(p => mrgDiff[p].status === FILE_STATUS.CONFLICT)
-      .length > 0
+    Object.keys(mrgDiff).filter(
+      (p) => mrgDiff[p].status === FILE_STATUS.CONFLICT
+    ).length > 0
   );
 };
 
@@ -113,7 +114,7 @@ const writeMergeMsg = (receiverHash, giverHash, ref) => {
 
   const mrgDiff = mergeDiff(receiverHash, giverHash);
   const conflicts = Object.keys(mrgDiff).filter(
-    p => mrgDiff[p].status === FILE_STATUS.CONFLICT
+    (p) => mrgDiff[p].status === FILE_STATUS.CONFLICT
   );
 
   if (conflicts.length > 0) {
@@ -135,7 +136,7 @@ const writeIndex = (receiverHash, giverHash) => {
 
   Index.write({});
 
-  Object.keys(mrgDiff).forEach(p => {
+  Object.keys(mrgDiff).forEach((p) => {
     if (mrgDiff[p].status === FILE_STATUS.CONFLICT) {
       Index.writeConflict(
         p,
@@ -229,5 +230,5 @@ module.exports = {
   writeMergeMsg,
   writeIndex,
   writeFastForwardMerge,
-  writeNonFastForwardMerge
+  writeNonFastForwardMerge,
 };

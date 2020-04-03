@@ -8,7 +8,7 @@ const FILE_STATUS = {
   MODIFY: "M",
   DELETE: "D",
   SAME: "SAME",
-  CONFLICT: "CONFLICT"
+  CONFLICT: "CONFLICT",
 };
 
 /**
@@ -32,9 +32,9 @@ const diff = (hash1, hash2) => {
  * Takes a diff and returns a JS object that maps from file paths to file statuses.
  * @param {Object} dif
  */
-const nameStatus = dif => {
+const nameStatus = (dif) => {
   return Object.keys(dif)
-    .filter(p => dif[p].status !== FILE_STATUS.SAME)
+    .filter((p) => dif[p].status !== FILE_STATUS.SAME)
     .reduce((ns, p) => Utils.setIn(ns, [p, dif[p].status]), {});
 };
 
@@ -96,8 +96,8 @@ const tocDiff = (receiver, giver, base) => {
         status: fileStatus(receiver[p], giver[p], base[p]),
         receiver: receiver[p],
         base: base[p],
-        giver: giver[p]
-      }
+        giver: giver[p],
+      },
     ]);
   }, {});
 };
@@ -110,7 +110,7 @@ const tocDiff = (receiver, giver, base) => {
  *
  * @param {String} hash
  */
-const changedFilesCommitWouldOverwrite = hash => {
+const changedFilesCommitWouldOverwrite = (hash) => {
   const headHash = Refs.hash("HEAD");
   return Utils.intersection(
     Object.keys(nameStatus(diff(headHash))),
@@ -125,7 +125,7 @@ const changedFilesCommitWouldOverwrite = hash => {
 const addedOrModifiedFiles = () => {
   const headToc = Refs.hash("HEAD") ? Objects.commitToc(Refs.hash("HEAD")) : {};
   const wc = nameStatus(tocDiff(headToc, Index.workingCopyToc()));
-  return Object.keys(wc).filter(p => wc[p] !== FILE_STATUS.DELETE);
+  return Object.keys(wc).filter((p) => wc[p] !== FILE_STATUS.DELETE);
 };
 
 module.exports = {
@@ -133,5 +133,5 @@ module.exports = {
   nameStatus,
   tocDiff,
   changedFilesCommitWouldOverwrite,
-  addedOrModifiedFiles
+  addedOrModifiedFiles,
 };

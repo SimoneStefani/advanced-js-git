@@ -26,7 +26,7 @@ const read = () => strToObj(Files.read(Files.enkelgitPath("config")));
  *
  * @param {Object} configObj
  */
-const write = configObj =>
+const write = (configObj) =>
   Files.write(Files.enkelgitPath("config"), objToStr(configObj));
 
 /**
@@ -35,11 +35,11 @@ const write = configObj =>
  *
  * @param {String} str
  */
-const strToObj = str => {
+const strToObj = (str) => {
   return str
     .split("[")
-    .map(item => item.trim())
-    .filter(item => item !== "")
+    .map((item) => item.trim())
+    .filter((item) => item !== "")
     .reduce(
       (c, item) => {
         const lines = item.split("\n");
@@ -69,16 +69,16 @@ const strToObj = str => {
  *
  * @param {String} configObj
  */
-const objToStr = configObj => {
+const objToStr = (configObj) => {
   return Object.keys(configObj)
     .reduce((arr, section) => {
       return arr.concat(
-        Object.keys(configObj[section]).map(subsection => {
+        Object.keys(configObj[section]).map((subsection) => {
           return { section: section, subsection: subsection };
         })
       );
     }, [])
-    .map(entry => {
+    .map((entry) => {
       const subsection =
         entry.subsection === "" ? "" : ' "' + entry.subsection + '"';
       const settings = configObj[entry.section][entry.subsection];
@@ -88,7 +88,7 @@ const objToStr = configObj => {
         subsection +
         "]\n" +
         Object.keys(settings)
-          .map(k => "  " + k + " = " + settings[k])
+          .map((k) => "  " + k + " = " + settings[k])
           .join("\n") +
         "\n"
       );
@@ -102,5 +102,5 @@ module.exports = {
   read,
   write,
   strToObj,
-  objToStr
+  objToStr,
 };

@@ -3,14 +3,14 @@
  *
  * @param {Any} val
  */
-const isString = val => typeof val === "string";
+const isString = (val) => typeof val === "string";
 
 /**
  * Returns a hash of string.
  *
  * @param {String} string
  */
-const hash = string => {
+const hash = (string) => {
   var hashInt = 0;
   for (let i = 0; i < string.length; i++) {
     hashInt = hashInt * 31 + string.charCodeAt(i);
@@ -46,22 +46,22 @@ const setIn = (obj, arr) => {
  *
  * @param {String} str
  */
-const lines = str => str.split("\n").filter(l => l !== "");
+const lines = (str) => str.split("\n").filter((l) => l !== "");
 
 /**
  * Returns a flattened version of arr.
  *
  * @param {Array} arr
  */
-const flatten = arr =>
-  [].concat(...arr.map(v => (Array.isArray(v) ? flatten(v) : v)));
+const flatten = (arr) =>
+  [].concat(...arr.map((v) => (Array.isArray(v) ? flatten(v) : v)));
 
 /**
  * Returns the unique elements in arr.
  *
  * @param {Array} arr
  */
-const unique = arr => [...new Set(arr)];
+const unique = (arr) => [...new Set(arr)];
 
 /**
  * Takes two arrays a and b. It returns an array of the
@@ -72,7 +72,7 @@ const unique = arr => [...new Set(arr)];
  */
 const intersection = (a, b) => {
   const s = new Set(b);
-  return a.filter(x => s.has(x));
+  return a.filter((x) => s.has(x));
 };
 
 /**
@@ -84,8 +84,8 @@ const intersection = (a, b) => {
  *
  * @param {String} remotePath
  */
-const onRemote = remotePath => {
-  return fn => {
+const onRemote = (remotePath) => {
+  return (fn) => {
     let originalDir = process.cwd();
     process.chdir(remotePath);
     let result = fn.apply(null, Array.prototype.slice.call(arguments, 1));
@@ -102,5 +102,5 @@ module.exports = {
   flatten,
   unique,
   intersection,
-  onRemote
+  onRemote,
 };

@@ -11,7 +11,7 @@ const Utils = require("./Utils");
  *
  * @param {String} ref
  */
-const isRef = ref => {
+const isRef = (ref) => {
   return (
     ref !== undefined &&
     (ref.match("^refs/heads/[A-Za-z-]+$") ||
@@ -25,7 +25,7 @@ const isRef = ref => {
  *
  * @param {String} ref
  */
-const terminalRef = ref => {
+const terminalRef = (ref) => {
   if (ref === "HEAD" && !isHeadDetached()) {
     // If ref is “HEAD” and head is pointing at a branch, return the branch.
     return Files.read(Files.enkelgitPath("HEAD")).match(
@@ -46,7 +46,7 @@ const terminalRef = ref => {
  *
  * @param {String} refOrHash
  */
-const hash = refOrHash => {
+const hash = (refOrHash) => {
   if (Objects.exists(refOrHash)) {
     return refOrHash;
   } else {
@@ -71,14 +71,15 @@ const isHeadDetached = () =>
  *
  * @param {String} branch
  */
-const isCheckedOut = branch => !Config.isBare() && headBranchName() === branch;
+const isCheckedOut = (branch) =>
+  !Config.isBare() && headBranchName() === branch;
 
 /**
  * Converts the branch name name into a qualified local branch ref.
  *
  * @param {String} name
  */
-const toLocalRef = name => "refs/heads/" + name;
+const toLocalRef = (name) => "refs/heads/" + name;
 
 /**
  * Converts remote and branch name name into a qualified remote branch ref.
@@ -105,7 +106,7 @@ const write = (ref, content) => {
  *
  * @param {String} ref
  */
-const rm = ref => {
+const rm = (ref) => {
   if (isRef(ref)) {
     fs.unlinkSync(Files.enkelgitPath(ref));
   }
@@ -117,10 +118,10 @@ const rm = ref => {
  *
  * @param {String} branchName
  */
-const fetchHeadBranchToMerge = branchName => {
+const fetchHeadBranchToMerge = (branchName) => {
   return Utils.lines(Files.read(Files.enkelgitPath("FETCH_HEAD")))
-    .filter(l => l.match("^.+ branch " + branchName + " of"))
-    .map(l => l.match("^([^ ]+) ")[1])[0];
+    .filter((l) => l.match("^.+ branch " + branchName + " of"))
+    .map((l) => l.match("^([^ ]+) ")[1])[0];
 };
 
 /**
@@ -138,7 +139,7 @@ const localHeads = () => {
  *
  * @param {String} ref
  */
-const exists = ref => isRef(ref) && fs.existsSync(Files.enkelgitPath(ref));
+const exists = (ref) => isRef(ref) && fs.existsSync(Files.enkelgitPath(ref));
 
 /**
  * Returns the name of the branch that HEAD is pointing at.
@@ -184,5 +185,5 @@ module.exports = {
   localHeads,
   exists,
   headBranchName,
-  commitParentHashes
+  commitParentHashes,
 };

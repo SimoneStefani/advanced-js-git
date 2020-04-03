@@ -16,9 +16,9 @@ test("Utils.setIn() test", () => {
 });
 
 test("Utils.lines() test", () => {
-  expect(Utils.lines("In a hole in the ground\n there lived a hobbit")).toEqual(
-    ["In a hole in the ground", " there lived a hobbit"]
-  );
+  expect(
+    Utils.lines("In a hole in the ground\n there lived a hobbit")
+  ).toEqual(["In a hole in the ground", " there lived a hobbit"]);
 });
 
 test("Utils.flatten() test", () => {

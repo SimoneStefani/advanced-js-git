@@ -6,16 +6,16 @@ const log = console.log;
  *
  * @param {String} message
  */
-const info = message => log(chalk.blue(message));
+const info = (message) => log(chalk.blue(message));
 
 /**
  * Print a red log statement.
  *
  * @param {String} message
  */
-const error = message => log(chalk.red(message));
+const error = (message) => log(chalk.red(message));
 
 module.exports = {
   info,
-  error
+  error,
 };
